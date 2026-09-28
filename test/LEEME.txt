@@ -1,0 +1,3 @@
+Copie aqui las imagenes de prueba (png, jpg, tif o bmp).
+Pueden ir sueltas o separadas en subcarpetas barco/ y no_barco/ si ya vienen etiquetadas.
+La interfaz lee esta carpeta por defecto; se puede elegir otra desde la barra lateral.

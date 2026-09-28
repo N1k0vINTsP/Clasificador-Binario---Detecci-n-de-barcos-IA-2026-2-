@@ -1,0 +1,6 @@
+streamlit>=1.40
+onnxruntime>=1.18
+numpy
+pandas
+pillow
+altair>=5
