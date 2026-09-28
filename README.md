@@ -12,7 +12,7 @@ Validación cruzada estratificada de 5 folds sobre ShipsNet (4000 imágenes), co
 |---|---:|
 | Línea base: píxeles + regresión logística | 93.00 % |
 | HOG + color + LBP + SVM (búsqueda en malla de C y γ) | 98.90 % |
-| Lo mismo con celdas HOG de 16 px (según el análisis de sensibilidad) | 99.32 % |
+| Lo mismo con celdas HOG de 16 px (según el análisis de sensibilidad) | 99.33 % |
 | CNN propia sin aumento de datos | 98.92 % |
 | ResNet18-D entrenada desde cero | 97.93 % |
 | ResNet18-D preentrenada en ImageNet, TTA | 99.88 % |

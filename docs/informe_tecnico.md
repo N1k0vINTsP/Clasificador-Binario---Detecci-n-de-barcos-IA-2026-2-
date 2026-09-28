@@ -68,7 +68,7 @@ Para calibrar el SVM se hizo una búsqueda en malla de C ∈ {1, 3, 10, 30, 100}
 
 *Figura 1. Accuracy de la validación interna en función de C y γ. Las curvas de γ = scale y γ = 3·10⁻⁴ casi coinciden.*
 
-La sensibilidad del HOG (figura 2) dio un resultado que no se esperaba: celdas más grandes funcionan mejor. Con celdas de 4 px el SVM llega a 96.70 %, con 8 px (el valor por defecto) a 98.88 % y con 16 px a 99.33 %, usando 576 valores en lugar de 2916. A 80×80 píxeles, un descriptor grueso recoge la forma general del casco y deja por fuera detalles que cambian de una imagen a otra. El número de orientaciones casi no influye: entre 98.75 % y 98.95 % de 6 a 18. Con la celda de 16 px, la combinación HOG + color + LBP con el mismo SVM llega a 99.32 % ± 0.42, el mejor resultado de los métodos clásicos.
+La sensibilidad del HOG (figura 2) dio un resultado que no se esperaba: celdas más grandes funcionan mejor. Con celdas de 4 px el SVM llega a 96.70 %, con 8 px (el valor por defecto) a 98.88 % y con 16 px a 99.33 %, usando 576 valores en lugar de 2916. A 80×80 píxeles, un descriptor grueso recoge la forma general del casco y deja por fuera detalles que cambian de una imagen a otra. El número de orientaciones casi no influye: entre 98.75 % y 98.95 % de 6 a 18. Con la celda de 16 px, agregar color y LBP ya no cambia el promedio: la combinación con el mismo SVM también da 99.33 % (± 0.42), el mejor resultado de los métodos clásicos.
 
 ![Sensibilidad del HOG](figuras/sensibilidad_hog.png)
 
@@ -86,7 +86,7 @@ Con esta red se midió el efecto del aumento de datos en tres niveles: ninguno, 
 
 ### 6.2 Transferencia desde ImageNet
 
-La otra opción fue partir de redes preentrenadas en ImageNet con la librería timm. La principal es una ResNet18-D (11.2 millones de parámetros), la variante de ResNet de He et al. (2019) que reemplaza la convolución con paso 2 del atajo por un promedio, ajustada 12 épocas con tasa máxima de 10⁻³ y el aumento completo. Para separar el efecto del preentrenamiento del de la arquitectura, la misma red se entrenó también desde cero con idéntica configuración.
+La otra opción fue partir de redes preentrenadas en ImageNet con la librería timm. La principal es una ResNet18-D (11.2 millones de parámetros), la variante de ResNet de He et al. (2019) que reemplaza la convolución con paso 2 del atajo por un promedio, ajustada 12 épocas con tasa máxima de 10⁻³ y el aumento completo. Para separar el efecto del preentrenamiento del de la arquitectura, la misma red se entrenó también desde cero con idéntica configuración. Con la misma receta se ajustó una MobileNetV3-L (Howard et al., 2019), de 4.2 millones de parámetros y diseñada para equipos móviles, para ver cuánto se pierde con una red más liviana.
 
 | Red (validación cruzada, 5 folds) | Parámetros | Accuracy (%) | Accuracy con TTA (%) | F1 con TTA | Escenas Planet (%) | Rotterdam (%) | Recall Rotterdam (%) |
 |---|---:|---:|---:|---:|---:|---:|---:|
@@ -95,10 +95,11 @@ La otra opción fue partir de redes preentrenadas en ImageNet con la librería t
 | CNN propia, aumento completo | 1.17 M | 97.42 ± 0.50 | 97.93 ± 0.42 | 0.960 | 95.8 | 84.5 | 13.3 |
 | ResNet18-D desde cero | 11.2 M | 97.93 ± 0.50 | 97.80 ± 0.49 | 0.958 | 95.9 | 83.1 | 6.0 |
 | ResNet18-D preentrenada en ImageNet | 11.2 M | 99.75 ± 0.21 | 99.88 ± 0.11 | 0.998 | 99.7 | 84.5 | 12.3 |
+| MobileNetV3-L preentrenada en ImageNet | 4.2 M | 99.15 ± 0.25 | 99.55 ± 0.27 | 0.991 | 98.6 | 83.5 | 7.0 |
 
 *Tabla 3. Redes entrenadas solo con ShipsNet. Las tres últimas columnas son prueba externa y se comentan en la sección 7.*
 
-El preentrenamiento es lo que más pesa. La misma ResNet18-D pasa de 97.93 % desde cero a 99.75 % preentrenada, y a 99.88 % con TTA: de unos 17 errores en cada fold de 800 imágenes a 1. Con 4000 imágenes la red no alcanza a aprender filtros tan buenos como los que ya trae de ImageNet (bordes, texturas, formas alargadas). Es también el único modelo cuyo peor fold (99.75 %) sigue lejos del 98 %.
+El preentrenamiento es lo que más pesa. La misma ResNet18-D pasa de 97.93 % desde cero a 99.75 % preentrenada, y a 99.88 % con TTA: de unos 17 errores en cada fold de 800 imágenes a 1. Con 4000 imágenes la red no alcanza a aprender filtros tan buenos como los que ya trae de ImageNet (bordes, texturas, formas alargadas). La MobileNetV3-L preentrenada también supera a todas las redes entrenadas desde cero (99.55 % con TTA), pero comete 18 errores en las 4000 imágenes, contra 5 de la ResNet18-D, cuyo peor fold con TTA queda en 99.75 %.
 
 ![Comparación de modelos](figuras/comparacion_modelos.png)
 
@@ -161,12 +162,12 @@ El computador de un dron tiene mucho menos cómputo que una estación de trabajo
 | Red | Parámetros | ONNX (MB) | ms por imagen | ms con TTA (8 vistas) | Accuracy CV (%) |
 |---|---:|---:|---:|---:|---:|
 | CNN propia | 1.17 M | 4.7 | 5.0 | 38.5 | 98.92 (sin TTA) |
-| MobileNetV3-L ImageNet | 4.2 M | 16.8 | 1.7 | 9.4 | 99.88 (solo fold 0) |
+| MobileNetV3-L ImageNet | 4.2 M | 16.8 | 1.7 | 9.4 | 99.55 |
 | ResNet18-D ImageNet (modelo final) | 11.2 M | 44.8 | 6.0 | 45.5 | 99.88 |
 
-*Tabla 6. Mediana de 200 ejecuciones. La ResNet18-D es el archivo `modelo/barcos.onnx` que usa la interfaz.*
+*Tabla 6. Mediana de 200 ejecuciones. La ResNet18-D es el archivo `modelo/barcos.onnx` que usa la interfaz. El accuracy de las redes preentrenadas es con TTA.*
 
-La ResNet18-D final tarda 6 ms por imagen en un solo hilo (unas 160 imágenes por segundo) y 45 ms con las 8 vistas del TTA (22 por segundo). Para confirmar recortes que ya marcó un detector o el AIS alcanza de sobra. Si el dron tuviera que barrer escenas completas con una ventana deslizante hay dos salidas: quitar el TTA, que en la validación cruzada solo sube el accuracy de 99.75 % a 99.88 %, o pasar a MobileNetV3-L, que es 3.5 veces más rápida. La CNN propia tiene menos parámetros pero no es más rápida, porque sus primeras capas trabajan a la resolución completa de 80×80.
+La ResNet18-D final tarda 6 ms por imagen en un solo hilo (unas 160 imágenes por segundo) y 45 ms con las 8 vistas del TTA (22 por segundo). Para confirmar recortes que ya marcó un detector o el AIS alcanza de sobra. Si el dron tuviera que barrer escenas completas con una ventana deslizante hay dos salidas: quitar el TTA, que en la validación cruzada solo sube el accuracy de 99.75 % a 99.88 %, o pasar a MobileNetV3-L, que es 3.5 veces más rápida pero se equivoca más (99.55 % con TTA). La CNN propia tiene menos parámetros pero no es más rápida, porque sus primeras capas trabajan a la resolución completa de 80×80.
 
 ## 10. Modelo final
 
@@ -210,4 +211,5 @@ El intervalo de confianza importa para interpretar el resultado. Con 100 imágen
 - Ojala, T., Pietikäinen, M. y Mäenpää, T. (2002). Multiresolution gray-scale and rotation invariant texture classification with local binary patterns. IEEE TPAMI, 24(7).
 - He, K., Zhang, X., Ren, S. y Sun, J. (2016). Deep Residual Learning for Image Recognition. CVPR.
 - He, T. et al. (2019). Bag of Tricks for Image Classification with Convolutional Neural Networks. CVPR (variante ResNet-D).
+- Howard, A. et al. (2019). Searching for MobileNetV3. ICCV.
 - Wightman, R. PyTorch Image Models (timm): https://github.com/huggingface/pytorch-image-models
