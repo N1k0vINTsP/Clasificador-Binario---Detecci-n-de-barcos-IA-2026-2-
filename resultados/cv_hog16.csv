@@ -1,0 +1,3 @@
+modelo,n_feats,accuracy,accuracy_std,precision,precision_std,recall,recall_std,f1,f1_std,roc_auc,roc_auc_std,mejores_params
+hog16+color+lbp + SVM-RBF (C=10),680,0.99325,0.0042278836313219634,0.9880832470132548,0.012300748639066154,0.985,0.007745966692414842,0.9865031656095498,0.008381571972107775,0.9996466666666667,0.00019497863130784598,
+hog16+color+lbp + SVM-RBF (grid search),680,0.99325,0.0042278836313219634,0.9880832470132548,0.012300748639066154,0.985,0.007745966692414842,0.9865031656095498,0.008381571972107775,0.9996466666666667,0.00019497863130784598,"[{'svc__C': 3, 'svc__gamma': 'scale'}, {'svc__C': 3, 'svc__gamma': 'scale'}, {'svc__C': 3, 'svc__gamma': 'scale'}, {'svc__C': 3, 'svc__gamma': 'scale'}, {'svc__C': 3, 'svc__gamma': 'scale'}]"

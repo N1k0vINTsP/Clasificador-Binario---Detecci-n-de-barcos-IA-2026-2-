@@ -6,7 +6,21 @@ El repositorio trae la interfaz para la prueba en vivo, el modelo ya entrenado y
 
 ## Resultados principales
 
-RESULTADOS_TABLA
+Validación cruzada estratificada de 5 folds sobre ShipsNet (4000 imágenes), con los mismos cortes para todos los modelos:
+
+| Configuración | Accuracy |
+|---|---:|
+| Línea base: píxeles + regresión logística | 93.00 % |
+| HOG + color + LBP + SVM (búsqueda en malla de C y γ) | 98.90 % |
+| Lo mismo con celdas HOG de 16 px (según el análisis de sensibilidad) | 99.32 % |
+| CNN propia sin aumento de datos | 98.92 % |
+| ResNet18-D entrenada desde cero | 97.93 % |
+| ResNet18-D preentrenada en ImageNet, TTA | 99.88 % |
+| **Modelo final**: ResNet18-D + puertos Maxar, TTA | **99.88 %** |
+
+Prueba externa del modelo final, con los modelos de validación (no vieron estas imágenes): 99.6 % en recortes nuevos de las escenas de Planet y 94.0 % en el puerto de Rotterdam (SpaceNet 6, otro satélite y otra resolución), donde el mismo modelo entrenado solo con ShipsNet se quedaba en 84.5 % y reconocía apenas el 12 % de los barcos.
+
+![Interfaz](docs/figuras/interfaz.png)
 
 ## Cómo correr la interfaz
 
@@ -53,9 +67,11 @@ python descargar.py shipsnet     # necesita la API de Kaggle; o bajar el zip a m
 python exp_clasicos.py           # línea base y descriptores + SVM (validación cruzada)
 python exp_cnn.py cnn_sin_aug cnn_geom cnn_aug resnet18d_scratch resnet18d_pre mnv3_pre
 python exp_dominios.py resnet18d_pre
-python robustez.py resnet18d_pre cnn_geom
+python robustez.py resnet18d_pre cnn_geom cnn_sin_aug
+python latencia.py
 python entrenar_final.py resnet18d_pre
 python figuras.py
+python tablas.py                 # tablas del informe en markdown
 ```
 
 Los recortes de Maxar, Rotterdam y de las escenas de Planet ya vienen en `datos_externos/*.npz`. Si se quieren regenerar desde las fuentes originales está `armar_externos.py`, que usa las coordenadas guardadas en los JSON de esa misma carpeta.
@@ -63,8 +79,8 @@ Los recortes de Maxar, Rotterdam y de las escenas de Planet ya vienen en `datos_
 ## Datos
 
 - **ShipsNet** ([Kaggle, rhammell](https://www.kaggle.com/datasets/rhammell/ships-in-satellite-imagery)): 4000 recortes de PlanetScope a 3 m, 1000 con barco. Es la base del entrenamiento y de la validación cruzada.
-- **Maxar Open Data Program** (CC BY-NC 4.0): 7 escenas de puertos (Valencia, Colombo, Tampa, Kingston en dos fechas, Iskenderun, Durban y Ravenna) remuestreadas a 1.2 m. De ahí salieron 1528 recortes, 513 con alguno de los 67 barcos marcados a mano. Se usan para entrenar.
-- **SpaceNet 6, Rotterdam** (CC BY-SA 4.0): imágenes WorldView-2 del puerto de Rotterdam. 322 recortes revisados uno por uno, 57 con barco. Sirven como prueba externa.
-- **Escenas completas de Planet** que vienen con el dataset de Kaggle: 201 recortes nuevos, también de prueba.
+- **Maxar Open Data Program** (CC BY-NC 4.0): 9 escenas de 7 puertos (Valencia, Colombo, Tampa, Kingston en dos fechas, Iskenderun, Durban y Ravenna) remuestreadas a 1.2 m. De ahí salieron 1528 recortes, 513 con alguno de los 67 barcos marcados a mano. Se usan para entrenar.
+- **SpaceNet 6, Rotterdam** (CC BY-SA 4.0): imágenes WorldView-2 del puerto de Rotterdam. 322 recortes revisados uno por uno, 57 con barco. Son la prueba externa de los modelos de validación; el modelo final, ya evaluado, se reentrenó incluyéndolos.
+- **Escenas completas de Planet** que vienen con el dataset de Kaggle: 201 recortes nuevos, solo de prueba.
 
 Los candidatos a barco en Rotterdam se buscaron con un detector YOLOv8 público entrenado con imágenes de Google Earth ([robmarkcole](https://github.com/robmarkcole/kaggle-ships-in-satellite-imagery-with-YOLOv8)); ese detector solo sirvió para proponer recortes y no hace parte del clasificador.

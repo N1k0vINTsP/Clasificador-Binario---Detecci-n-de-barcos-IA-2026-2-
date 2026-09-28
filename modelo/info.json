@@ -21,26 +21,26 @@
     ]
   },
   "cv": {
-    "accuracy": 0.998,
-    "accuracy_std": 0.0012747548783981996,
-    "precision": 0.9920634920634921,
+    "accuracy": 0.99875,
+    "accuracy_std": 0.001118033988749871,
+    "precision": 0.9950248756218906,
     "recall": 1.0,
-    "errores": 8,
+    "errores": 5,
     "n": 4000,
-    "maxar_accuracy": 0.9879621668099742,
-    "maxar_n": 1163
+    "maxar_accuracy": 0.9882198952879581,
+    "maxar_n": 1528
   },
   "prueba_externa": {
     "ext_planet": {
-      "accuracy": 1.0,
-      "precision": 1.0,
+      "accuracy": 0.9950248756218906,
+      "precision": 0.975,
       "recall": 1.0,
       "n": 201
     },
     "ext_rotterdam": {
-      "accuracy": 0.9565217391304348,
-      "precision": 0.8524590163934426,
-      "recall": 0.9122807017543859,
+      "accuracy": 0.9440993788819876,
+      "precision": 0.819672131147541,
+      "recall": 0.8771929824561403,
       "n": 322
     }
   },

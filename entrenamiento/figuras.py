@@ -35,22 +35,43 @@ def guardar(fig, nombre):
 def comparacion_modelos():
     filas = []
     c = pd.read_csv(RES / "cv_clasicos.csv")
+    bonitos = {"base: pixeles + regresion logistica": "Línea base: píxeles + regresión logística",
+               "base: pixeles + KNN (k=5)": "Píxeles + PCA + KNN (k = 5)",
+               "color + SVM-RBF": "Color + SVM", "hog + SVM-RBF": "HOG + SVM", "lbp + SVM-RBF": "LBP + SVM",
+               "hog+color+lbp + SVM-RBF (C=10)": "HOG + color + LBP + SVM",
+               "hog+color+lbp + RandomForest": "HOG + color + LBP + Random Forest",
+               "hog+color+lbp + SVM-RBF (grid search)": "HOG + color + LBP + SVM, malla de C y γ"}
     for _, r in c.iterrows():
-        filas.append((r["modelo"], r["accuracy"], r["accuracy_std"]))
+        filas.append((bonitos.get(r["modelo"], r["modelo"]), r["accuracy"], r["accuracy_std"]))
+    if (RES / "cv_hog16.csv").exists():
+        h = pd.read_csv(RES / "cv_hog16.csv")
+        r = h[h.modelo == "hog16+color+lbp + SVM-RBF (C=10)"].iloc[0]
+        filas.append(("HOG celda 16 px + color + LBP + SVM", r["accuracy"], r["accuracy_std"]))
     if (RES / "cv_cnn_folds.csv").exists():
         d = pd.read_csv(RES / "cv_cnn_folds.csv").drop_duplicates(["config", "fold"], keep="last")
-        nombres = {"cnn_sin_aug": "CNN propia, sin aumento", "cnn_geom": "CNN propia + rotaciones/espejos",
-                   "cnn_aug": "CNN propia + aumento completo", "resnet18d_scratch": "ResNet18-D desde cero",
-                   "resnet18d_pre": "ResNet18-D ImageNet (ajuste fino)", "mnv3_pre": "MobileNetV3 ImageNet",
+        nombres = {"cnn_sin_aug": "CNN propia, sin aumento", "cnn_geom": "CNN propia, 8 orientaciones",
+                   "cnn_aug": "CNN propia, aumento completo", "resnet18d_scratch": "ResNet18-D desde cero",
+                   "resnet18d_pre": "ResNet18-D ImageNet", "mnv3_pre": "MobileNetV3-L ImageNet",
                    "convnext_atto_pre": "ConvNeXt-Atto ImageNet"}
         for cfg, g in d.groupby("config"):
             if len(g) == 5:
                 filas.append((nombres.get(cfg, cfg) + " + TTA", g["accuracy_tta"].mean(), g["accuracy_tta"].std(ddof=0)))
+    if (RES / "cv_dominios_folds.csv").exists():
+        m = pd.read_csv(RES / "cv_dominios_folds.csv").drop_duplicates(["config", "fold"], keep="last")
+        g = m[m.config == "resnet18d_pre+maxar"]
+        if len(g) == 5:
+            filas.append(("ResNet18-D ImageNet + puertos Maxar + TTA (final)", g.shipsnet_accuracy.mean(),
+                          g.shipsnet_accuracy.std(ddof=0)))
     df = pd.DataFrame(filas, columns=["modelo", "acc", "std"]).sort_values("acc")
-    fig, ax = plt.subplots(figsize=(7.2, 0.32 * len(df) + 0.8))
-    colores = [AZUL if "ImageNet" in m else (VERDE if "CNN" in m or "ResNet" in m else GRIS) for m in df.modelo]
-    ax.barh(df.modelo, df.acc * 100, xerr=df["std"] * 100, color=colores, height=0.6,
+    fig, ax = plt.subplots(figsize=(7.4, 0.32 * len(df) + 1.0))
+    grupo = ["preentrenada" if "ImageNet" in m else ("desde cero" if "CNN" in m or "ResNet" in m else "clásico")
+             for m in df.modelo]
+    color_de = {"clásico": GRIS, "desde cero": VERDE, "preentrenada": AZUL}
+    ax.barh(df.modelo, df.acc * 100, xerr=df["std"] * 100, color=[color_de[g] for g in grupo], height=0.6,
             error_kw=dict(ecolor=TINTA2, lw=0.8, capsize=2))
+    from matplotlib.patches import Patch
+    ax.legend(handles=[Patch(color=color_de[k], label=k) for k in ("clásico", "desde cero", "preentrenada")],
+              frameon=False, fontsize=8, loc="lower right", title="tipo de modelo", title_fontsize=8)
     for i, (a, s) in enumerate(zip(df.acc, df["std"])):
         ax.text(a * 100 + s * 100 + 0.15, i, f"{a * 100:.2f} %", va="center", fontsize=8, color=TINTA)
     ax.axvline(98, color=NARANJA, lw=1)
@@ -88,10 +109,12 @@ def sensibilidad_hog():
     fig, axs = plt.subplots(1, 2, figsize=(7, 2.6), sharey=True)
     a = h[h.orientaciones == 9].sort_values("celda")
     axs[0].errorbar(a.celda, a.accuracy * 100, yerr=a["std"] * 100, fmt="-o", color=AZUL, lw=2, ms=4, capsize=2)
+    axs[0].set_xticks(a.celda)
     axs[0].set_xlabel("tamaño de celda HOG (px), 9 orientaciones")
     axs[0].set_ylabel("accuracy CV (%)")
     b = h[h.celda == 8].sort_values("orientaciones")
     axs[1].errorbar(b.orientaciones, b.accuracy * 100, yerr=b["std"] * 100, fmt="-o", color=AZUL, lw=2, ms=4, capsize=2)
+    axs[1].set_xticks(b.orientaciones)
     axs[1].set_xlabel("orientaciones, celda de 8 px")
     fig.suptitle("Sensibilidad del descriptor HOG (SVM-RBF, C=10)", x=0.02, ha="left", fontweight="bold", fontsize=10)
     guardar(fig, "sensibilidad_hog.png")
@@ -143,20 +166,27 @@ def robustez():
     if not ruta.exists():
         return
     r = pd.read_csv(ruta)
+    etiquetas = {"resnet18d_pre": "ResNet18-D ImageNet", "cnn_geom": "CNN propia, 8 orientaciones",
+                 "cnn_sin_aug": "CNN propia, sin aumento", "hog+color+lbp SVM": "HOG + color + LBP + SVM"}
+    titulos = {"desenfoque": "desenfoque (σ en px)", "ruido": "ruido gaussiano (σ)", "brillo": "brillo (factor)",
+               "resolucion": "resolución (fracción)", "jpeg": "JPEG (calidad)", "zoom": "zoom (factor)"}
     tipos = list(r.perturbacion.unique())
-    fig, axs = plt.subplots(1, len(tipos), figsize=(2.1 * len(tipos), 2.4), sharey=True)
+    fig, axs = plt.subplots(2, 3, figsize=(9, 5.2), sharey=True)
     modelos = list(r.modelo.unique())
     colores = [AZUL, VERDE, NARANJA, AMARILLO]
-    for ax, t in zip(axs, tipos):
-        s = r[r.perturbacion == t]
+    for ax, t in zip(axs.ravel(), tipos):
+        s_ = r[r.perturbacion == t]
         for mdl, col in zip(modelos, colores):
-            q = s[s.modelo == mdl]
-            ax.plot(range(len(q)), q.accuracy * 100, "-o", color=col, lw=2, ms=3.5, label=mdl)
-        ax.set_xticks(range(len(q)), [str(v) for v in q.valor], fontsize=7)
-        ax.set_title(t, fontsize=9)
-    axs[0].set_ylabel("accuracy fold 0 (%)")
-    axs[0].legend(frameon=False, fontsize=7, loc="lower left")
-    fig.suptitle("Robustez ante degradaciones típicas de la cámara del UAV", x=0.02, ha="left", fontweight="bold", fontsize=10)
+            q = s_[s_.modelo == mdl]
+            ax.plot(range(len(q)), q.accuracy * 100, "-o", color=col, lw=2, ms=4, label=etiquetas.get(mdl, mdl))
+        ax.set_xticks(range(len(q)), [f"{v:g}" for v in q.valor], fontsize=8)
+        ax.set_title(titulos.get(t, t), fontsize=9)
+    for ax in axs[:, 0]:
+        ax.set_ylabel("accuracy, fold 0 (%)")
+    h, l = axs[0, 0].get_legend_handles_labels()
+    fig.legend(h, l, loc="lower center", ncol=4, frameon=False, fontsize=8, bbox_to_anchor=(0.5, -0.02))
+    fig.suptitle("Robustez ante degradaciones de la imagen", x=0.02, ha="left", fontweight="bold", fontsize=10)
+    fig.tight_layout(rect=(0, 0.05, 1, 0.97))
     guardar(fig, "robustez.png")
 
 

@@ -11,7 +11,6 @@ import altair as alt
 import numpy as np
 import pandas as pd
 import streamlit as st
-import streamlit.components.v1 as components
 from PIL import Image, ImageOps
 
 from clasificador import Clasificador, cargar_imagen
@@ -107,25 +106,6 @@ def ampliar(a, lado=280, borde=None):
     return ImageOps.expand(img, border=6, fill=borde) if borde else img
 
 
-def atajos_teclado():
-    # b = barco, n = no barco, flechas = navegar. Si el navegador lo bloquea, quedan los botones.
-    components.html("""
-    <script>
-    const doc = window.parent.document;
-    if (!doc.__atajosBarcos) {
-      doc.__atajosBarcos = true;
-      doc.addEventListener('keydown', (e) => {
-        if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
-        const mapa = {b: 'Barco', n: 'No barco', ArrowLeft: '◀ Anterior', ArrowRight: 'Siguiente ▶'};
-        const texto = mapa[e.key];
-        if (!texto) return;
-        const btn = [...doc.querySelectorAll('button')].find(x => x.innerText.trim() === texto);
-        if (btn && !btn.disabled) { btn.click(); e.preventDefault(); }
-      });
-    }
-    </script>""", height=0)
-
-
 modelo = cargar_modelo()
 info = modelo.info
 cv = info.get("cv", {})
@@ -135,12 +115,12 @@ with st.sidebar:
     st.subheader("Imágenes de prueba", anchor=False)
     if "carpeta" not in st.session_state:
         st.session_state.carpeta = str(RAIZ / "test")
-    if st.button("Elegir carpeta…", use_container_width=True):
+    if st.button("Elegir carpeta…", width="stretch"):
         elegida = elegir_carpeta()
         if elegida:
             st.session_state.carpeta = elegida
     carpeta = st.text_input("Carpeta", key="carpeta")
-    if st.button("Cargar carpeta", type="primary", use_container_width=True):
+    if st.button("Cargar carpeta", type="primary", width="stretch"):
         base = Path(carpeta)
         if not base.is_dir():
             st.error("No existe esa carpeta.")
@@ -153,7 +133,7 @@ with st.sidebar:
                 st.warning("No encontré imágenes (.png, .jpg, .tif, .bmp) en esa carpeta.")
     subidas = st.file_uploader("…o arrastrar las imágenes aquí", accept_multiple_files=True,
                                type=[e[1:] for e in EXTS])
-    if subidas and st.button("Usar imágenes subidas", use_container_width=True):
+    if subidas and st.button("Usar imágenes subidas", width="stretch"):
         nuevo_lote(*leer([(f.name, io.BytesIO(f.getvalue())) for f in subidas]), origen="archivos subidos")
 
     st.divider()
@@ -194,7 +174,7 @@ if (st.session_state.etq_nombre >= 0).any() and (etq < 0).all():
     c1, c2 = st.columns([4, 1])
     c1.info(f"{int((st.session_state.etq_nombre >= 0).sum())} de {N} imágenes traen la etiqueta "
             "en el nombre del archivo o en la carpeta (barco/no_barco, 1/0).")
-    if c2.button("Usar esas etiquetas", use_container_width=True):
+    if c2.button("Usar esas etiquetas", width="stretch"):
         st.session_state.etq = st.session_state.etq_nombre.copy()
         st.session_state.orden = [int(k) for k in np.where(st.session_state.etq >= 0)[0]]
         st.rerun()
@@ -244,12 +224,12 @@ with izq:
         st.session_state.orden = [j for j in st.session_state.orden if j != k]
 
     b1, b2 = st.columns(2)
-    b1.button("Barco", on_click=poner, args=(1,), use_container_width=True, type="primary")
-    b2.button("No barco", on_click=poner, args=(0,), use_container_width=True)
+    b1.button("Barco", on_click=poner, args=(1,), width="stretch", type="primary", shortcut="B")
+    b2.button("No barco", on_click=poner, args=(0,), width="stretch", shortcut="N")
     n1, n2, n3 = st.columns(3)
-    n1.button("◀ Anterior", on_click=mover, args=(-1,), use_container_width=True, disabled=i == 0)
-    n2.button("Siguiente ▶", on_click=mover, args=(1,), use_container_width=True, disabled=i == N - 1)
-    n3.button("Borrar etiqueta", on_click=borrar, use_container_width=True, disabled=etq[i] < 0)
+    n1.button("◀ Anterior", on_click=mover, args=(-1,), width="stretch", disabled=i == 0, shortcut="Left")
+    n2.button("Siguiente ▶", on_click=mover, args=(1,), width="stretch", disabled=i == N - 1, shortcut="Right")
+    n3.button("Borrar etiqueta", on_click=borrar, width="stretch", disabled=etq[i] < 0)
     st.session_state.ir_a = i + 1
     c1, c2 = st.columns([1, 2])
     c1.number_input("Ir a la imagen", min_value=1, max_value=N, step=1, key="ir_a",
@@ -277,7 +257,7 @@ with der:
         tooltip=["real", "predicho", "n"])
     numeros = base.mark_text(fontSize=24, fontWeight="bold").encode(
         text="n:Q", color=alt.condition(f"datum.n > {max(1, m['n']) * 0.45}", alt.value("white"), alt.value("#1d2733")))
-    st.altair_chart((celdas + numeros).properties(height=190), use_container_width=True)
+    st.altair_chart((celdas + numeros).properties(height=190), width="stretch")
 
     if len(st.session_state.orden) >= 2:
         orden = np.array(st.session_state.orden)
@@ -293,7 +273,7 @@ with der:
         capas.append(alt.Chart(pd.DataFrame({"y": [0.98]})).mark_rule(color=ROJO, opacity=0.7).encode(y="y:Q"))
         if cv:
             capas.append(alt.Chart(pd.DataFrame({"y": [cv["accuracy"]]})).mark_rule(color=GRIS).encode(y="y:Q"))
-        st.altair_chart(alt.layer(*capas).properties(height=190), use_container_width=True)
+        st.altair_chart(alt.layer(*capas).properties(height=190), width="stretch")
         st.caption("Rojo: meta del 98 % · gris: accuracy de la validación cruzada")
 
     if cv:
@@ -303,7 +283,7 @@ with der:
             "validación cruzada": [pct(cv["accuracy"], 2), pct(cv["precision"], 2), pct(cv["recall"], 2)],
             "en vivo": [pct(m["acc"]), pct(m["prec"]), pct(m["rec"])],
         })
-        st.dataframe(comp, hide_index=True, use_container_width=True)
+        st.dataframe(comp, hide_index=True, width="stretch")
         if m["n"] >= 10:
             lo, hi = wilson(m["tp"] + m["tn"], m["n"])
             if lo <= cv["accuracy"] <= hi:
@@ -313,7 +293,7 @@ with der:
             elif cv["accuracy"] > hi:
                 st.caption(f"El accuracy de la validación cruzada ({100 * cv['accuracy']:.1f} %) queda por encima del "
                            f"IC 95 % en vivo ({100 * lo:.1f}–{100 * hi:.1f} %): estas imágenes difieren de las de "
-                           "entrenamiento (sensor, escala o criterio de etiquetado). Revisar la pestaña de errores.")
+                           "entrenamiento (sensor, escala o criterio de etiquetado). Ver los errores en la galería.")
             else:
                 st.caption(f"En vivo el modelo rinde por encima de lo que predice la validación cruzada "
                            f"(IC 95 % {100 * lo:.1f}–{100 * hi:.1f} %).")
@@ -348,11 +328,11 @@ with tab2:
     vista = tabla.copy()
     if a_ciegas:
         vista.loc[etq < 0, ["p_barco", "prediccion"]] = [np.nan, ""]
-    st.dataframe(vista, use_container_width=True, hide_index=True)
+    st.dataframe(vista, width="stretch", hide_index=True)
 
 c1, c2 = st.columns([1, 3])
 c1.download_button("Descargar CSV", tabla.to_csv(index=False).encode("utf-8"),
-                   f"evaluacion_{dt.datetime.now():%Y%m%d_%H%M}.csv", "text/csv", use_container_width=True)
+                   f"evaluacion_{dt.datetime.now():%Y%m%d_%H%M}.csv", "text/csv", width="stretch")
 if c2.button("Guardar evaluación en resultados_en_vivo/", disabled=m["n"] == 0):
     carpeta_res = RAIZ / "resultados_en_vivo"
     carpeta_res.mkdir(exist_ok=True)
@@ -366,4 +346,3 @@ if c2.button("Guardar evaluación en resultados_en_vivo/", disabled=m["n"] == 0)
                                                           encoding="utf-8")
     st.success(f"Guardado en resultados_en_vivo/evaluacion_{sello}.csv y .json")
 
-atajos_teclado()

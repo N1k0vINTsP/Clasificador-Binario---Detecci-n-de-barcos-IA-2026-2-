@@ -4,8 +4,8 @@
   Solo para prueba.
 - ext_rotterdam.npz: recortes del puerto de Rotterdam (SpaceNet 6, WorldView-2 a 0.5 m), llevados a
   80x80. Solo para prueba: nunca entra al entrenamiento.
-- ext_maxar.npz: recortes de 7 escenas de puertos (Valencia, Colombo, Tampa, Kingston, Iskenderun,
-  Durban, Ravenna) del programa Maxar Open Data, a 1.2 m. Se usa para entrenar.
+- ext_maxar.npz: recortes de 9 escenas de 7 puertos (Valencia, Colombo, Tampa, Kingston en dos fechas,
+  Iskenderun, Durban, Ravenna) del programa Maxar Open Data, a 1.2 m. Se usa para entrenar.
 
 Las etiquetas se revisaron una por una a ojo. Los candidatos a barco de Rotterdam salieron de un
 detector YOLO publico entrenado con imagenes de Google Earth; aqui solo se guardan las coordenadas.
