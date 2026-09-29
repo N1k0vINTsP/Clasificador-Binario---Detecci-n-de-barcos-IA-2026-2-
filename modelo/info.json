@@ -1,0 +1,53 @@
+{
+  "archivo": "barcos.onnx",
+  "entrada": "RGB 80x80, valores 0-1, formato NCHW",
+  "umbral": 0.5,
+  "descripcion": "resnet18d preentrenada en ImageNet, ajuste fino, TTA x8",
+  "configuraciones": [
+    {
+      "config": "resnet18d_pre",
+      "red": "resnet18d",
+      "params": 11196257,
+      "min_entreno": 7.1
+    }
+  ],
+  "datos_entrenamiento": {
+    "imagenes": 5850,
+    "barcos": 1570,
+    "fuentes": [
+      "ShipsNet (Kaggle)",
+      "Maxar Open Data, 7 puertos",
+      "SpaceNet 6 Rotterdam"
+    ]
+  },
+  "cv": {
+    "accuracy": 0.99875,
+    "accuracy_std": 0.001118033988749871,
+    "precision": 0.9950248756218906,
+    "recall": 1.0,
+    "errores": 5,
+    "n": 4000,
+    "maxar_accuracy": 0.9882198952879581,
+    "maxar_n": 1528
+  },
+  "prueba_externa": {
+    "ext_planet": {
+      "accuracy": 0.9950248756218906,
+      "precision": 0.975,
+      "recall": 1.0,
+      "n": 201
+    },
+    "ext_rotterdam": {
+      "accuracy": 0.9440993788819876,
+      "precision": 0.819672131147541,
+      "recall": 0.8771929824561403,
+      "n": 322
+    }
+  },
+  "rendimiento_onnx": {
+    "dif_max_torch_onnx": 8.195638656616211e-08,
+    "ms_por_imagen_cpu": 4.204977750003991,
+    "tamano_mb": 44.780377
+  },
+  "fecha": "2026-09-28 07:39"
+}

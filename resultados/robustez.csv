@@ -1,0 +1,121 @@
+perturbacion,valor,modelo,accuracy
+desenfoque,0.0,resnet18d_pre,1.0
+desenfoque,0.0,cnn_geom,0.99625
+desenfoque,0.0,cnn_sin_aug,0.99125
+desenfoque,0.0,hog+color+lbp SVM,0.9925
+desenfoque,0.5,resnet18d_pre,1.0
+desenfoque,0.5,cnn_geom,0.995
+desenfoque,0.5,cnn_sin_aug,0.99125
+desenfoque,0.5,hog+color+lbp SVM,0.99375
+desenfoque,1.0,resnet18d_pre,1.0
+desenfoque,1.0,cnn_geom,0.995
+desenfoque,1.0,cnn_sin_aug,0.9925
+desenfoque,1.0,hog+color+lbp SVM,0.99
+desenfoque,1.5,resnet18d_pre,1.0
+desenfoque,1.5,cnn_geom,0.99125
+desenfoque,1.5,cnn_sin_aug,0.99
+desenfoque,1.5,hog+color+lbp SVM,0.935
+desenfoque,2.0,resnet18d_pre,1.0
+desenfoque,2.0,cnn_geom,0.9875
+desenfoque,2.0,cnn_sin_aug,0.98125
+desenfoque,2.0,hog+color+lbp SVM,0.80375
+ruido,0.0,resnet18d_pre,1.0
+ruido,0.0,cnn_geom,0.99625
+ruido,0.0,cnn_sin_aug,0.99125
+ruido,0.0,hog+color+lbp SVM,0.9925
+ruido,0.02,resnet18d_pre,1.0
+ruido,0.02,cnn_geom,0.99625
+ruido,0.02,cnn_sin_aug,0.9925
+ruido,0.02,hog+color+lbp SVM,0.96625
+ruido,0.05,resnet18d_pre,0.99875
+ruido,0.05,cnn_geom,0.99625
+ruido,0.05,cnn_sin_aug,0.98625
+ruido,0.05,hog+color+lbp SVM,0.78875
+ruido,0.08,resnet18d_pre,0.925
+ruido,0.08,cnn_geom,0.9425
+ruido,0.08,cnn_sin_aug,0.81
+ruido,0.08,hog+color+lbp SVM,0.75
+ruido,0.12,resnet18d_pre,0.81
+ruido,0.12,cnn_geom,0.8225
+ruido,0.12,cnn_sin_aug,0.75
+ruido,0.12,hog+color+lbp SVM,0.75
+brillo,0.5,resnet18d_pre,1.0
+brillo,0.5,cnn_geom,0.96
+brillo,0.5,cnn_sin_aug,0.9525
+brillo,0.5,hog+color+lbp SVM,0.99125
+brillo,0.7,resnet18d_pre,1.0
+brillo,0.7,cnn_geom,0.99
+brillo,0.7,cnn_sin_aug,0.98125
+brillo,0.7,hog+color+lbp SVM,0.99125
+brillo,1.0,resnet18d_pre,1.0
+brillo,1.0,cnn_geom,0.99625
+brillo,1.0,cnn_sin_aug,0.99125
+brillo,1.0,hog+color+lbp SVM,0.9925
+brillo,1.3,resnet18d_pre,0.99875
+brillo,1.3,cnn_geom,0.95
+brillo,1.3,cnn_sin_aug,0.99125
+brillo,1.3,hog+color+lbp SVM,0.9925
+brillo,1.6,resnet18d_pre,0.99875
+brillo,1.6,cnn_geom,0.87125
+brillo,1.6,cnn_sin_aug,0.92875
+brillo,1.6,hog+color+lbp SVM,0.95
+resolucion,1.0,resnet18d_pre,1.0
+resolucion,1.0,cnn_geom,0.99625
+resolucion,1.0,cnn_sin_aug,0.99125
+resolucion,1.0,hog+color+lbp SVM,0.9925
+resolucion,0.75,resnet18d_pre,1.0
+resolucion,0.75,cnn_geom,0.995
+resolucion,0.75,cnn_sin_aug,0.9925
+resolucion,0.75,hog+color+lbp SVM,0.995
+resolucion,0.5,resnet18d_pre,1.0
+resolucion,0.5,cnn_geom,0.995
+resolucion,0.5,cnn_sin_aug,0.99
+resolucion,0.5,hog+color+lbp SVM,0.97
+resolucion,0.35,resnet18d_pre,1.0
+resolucion,0.35,cnn_geom,0.9925
+resolucion,0.35,cnn_sin_aug,0.98875
+resolucion,0.35,hog+color+lbp SVM,0.905
+resolucion,0.25,resnet18d_pre,0.99875
+resolucion,0.25,cnn_geom,0.98375
+resolucion,0.25,cnn_sin_aug,0.97625
+resolucion,0.25,hog+color+lbp SVM,0.75375
+jpeg,100.0,resnet18d_pre,1.0
+jpeg,100.0,cnn_geom,0.99625
+jpeg,100.0,cnn_sin_aug,0.99125
+jpeg,100.0,hog+color+lbp SVM,0.9925
+jpeg,60.0,resnet18d_pre,1.0
+jpeg,60.0,cnn_geom,0.995
+jpeg,60.0,cnn_sin_aug,0.99125
+jpeg,60.0,hog+color+lbp SVM,0.92625
+jpeg,30.0,resnet18d_pre,1.0
+jpeg,30.0,cnn_geom,0.99625
+jpeg,30.0,cnn_sin_aug,0.99125
+jpeg,30.0,hog+color+lbp SVM,0.75875
+jpeg,15.0,resnet18d_pre,0.99875
+jpeg,15.0,cnn_geom,0.995
+jpeg,15.0,cnn_sin_aug,0.9925
+jpeg,15.0,hog+color+lbp SVM,0.75
+jpeg,8.0,resnet18d_pre,0.9975
+jpeg,8.0,cnn_geom,0.99
+jpeg,8.0,cnn_sin_aug,0.99
+jpeg,8.0,hog+color+lbp SVM,0.75
+zoom,0.7,resnet18d_pre,0.98625
+zoom,0.7,cnn_geom,0.9075
+zoom,0.7,cnn_sin_aug,0.93375
+zoom,0.7,hog+color+lbp SVM,0.75
+zoom,0.85,resnet18d_pre,0.9975
+zoom,0.85,cnn_geom,0.97625
+zoom,0.85,cnn_sin_aug,0.9825
+zoom,0.85,hog+color+lbp SVM,0.92625
+zoom,1.0,resnet18d_pre,1.0
+zoom,1.0,cnn_geom,0.99625
+zoom,1.0,cnn_sin_aug,0.99125
+zoom,1.0,hog+color+lbp SVM,0.9925
+zoom,1.15,resnet18d_pre,1.0
+zoom,1.15,cnn_geom,0.9925
+zoom,1.15,cnn_sin_aug,0.99
+zoom,1.15,hog+color+lbp SVM,0.9775
+zoom,1.3,resnet18d_pre,0.99875
+zoom,1.3,cnn_geom,0.9875
+zoom,1.3,cnn_sin_aug,0.98125
+zoom,1.3,hog+color+lbp SVM,0.9425
