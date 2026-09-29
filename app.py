@@ -2,6 +2,7 @@ import datetime as dt
 import io
 import json
 import math
+import os
 import re
 import subprocess
 import sys
@@ -12,8 +13,16 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 from PIL import Image, ImageOps
+from streamlit import runtime
 
 from clasificador import Clasificador, cargar_imagen
+
+if __name__ == "__main__" and not runtime.exists():
+    # "python app.py" o el botón de ejecutar de VS Code: se relanza como "streamlit run app.py"
+    from streamlit.web import cli
+    os.chdir(Path(__file__).resolve().parent)
+    sys.argv = ["streamlit", "run", Path(__file__).name]
+    sys.exit(cli.main())
 
 EXTS = {".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff"}
 SI = {"1", "ship", "ships", "barco", "barcos", "positivo", "positivos"}

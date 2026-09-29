@@ -1,6 +1,9 @@
 [client]
 toolbarMode = "viewer"
 
+[server]
+showEmailPrompt = false
+
 [theme]
 primaryColor = "#1f4e79"
 backgroundColor = "#ffffff"

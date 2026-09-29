@@ -24,14 +24,22 @@ Prueba externa del modelo final, con los modelos de validación (no vieron estas
 
 ## Cómo correr la interfaz
 
-Se necesita Python 3.10 o más reciente. La interfaz solo depende de Streamlit y ONNX Runtime; no hace falta instalar PyTorch.
+Se necesita Python 3.10 o más reciente. La interfaz solo depende de Streamlit y ONNX Runtime; no hace falta instalar PyTorch. Todo se corre desde la carpeta raíz del repositorio, la que tiene `app.py`.
+
+En una terminal:
 
 ```bash
-pip install -r requirements.txt
-streamlit run app.py
+python -m pip install -r requirements.txt
+python -m streamlit run app.py
 ```
 
-Se abre en el navegador (http://localhost:8501). Para la prueba:
+Desde Visual Studio Code:
+
+1. Abrir la carpeta del repositorio (Archivo → Abrir carpeta).
+2. `Ctrl+Shift+P` → **Python: Create Environment** → **Venv**, y marcar solo el `requirements.txt` de la raíz (el de `entrenamiento/` es para reentrenar y trae PyTorch). Si Pylance sigue diciendo que no encuentra `streamlit` o `altair`, elegir ese entorno (`.venv`) con **Python: Select Interpreter**.
+3. Abrir `app.py` y ejecutarlo con el botón ▶. El script se relanza solo como `streamlit run app.py`.
+
+La interfaz se abre en el navegador (http://localhost:8501) y se detiene con `Ctrl+C` en la terminal. Para la prueba:
 
 1. Copiar las imágenes que entregue el docente en la carpeta `test/` (o en cualquier otra y escribir la ruta, o usar **Elegir carpeta…**). También se pueden arrastrar los archivos al recuadro de la barra lateral.
 2. Pulsar **Cargar carpeta**. El modelo clasifica todas las imágenes de una vez; las que no son de 80×80 se reescalan.
