@@ -1,12 +1,12 @@
 # Informe técnico: clasificador barco / no barco para el UAV de inspección portuaria
 
-Inteligencia Artificial, Ingeniería Mecatrónica, periodo 2026-2. Proyecto 2 (segundo corte). Este documento es la evidencia E2 del formato ABET y describe también el protocolo de la prueba en vivo (E3 y E4).
+Inteligencia Artificial, Ingeniería Mecatrónica, periodo 2026-2. Proyecto 2 (segundo corte). Este documento es la evidencia E2 del formato ABET y también describe los protocolos de las pruebas en vivo (E3 y E4).
 
 ## 1. Planteamiento
 
-El dron recibe recortes de 80×80 píxeles en RGB y tiene que decidir si en cada uno hay un barco. Dahana y Gurning (2020) proponen la vigilancia aérea precisamente porque el AIS y el VTS muestran la posición de un buque como un ícono, sin la imagen real; el clasificador es la parte que hace esa confirmación visual a bordo, como en las pruebas de inspección con drones del puerto de Rotterdam.
+El dron recibe recortes de 80×80 píxeles en RGB y debe decidir si en cada uno hay un barco. Dahana y Gurning (2020) proponen la vigilancia aérea precisamente porque el AIS y el VTS muestran la posición de un buque como un ícono, sin la imagen real; el clasificador es la parte que realiza esa confirmación visual a bordo, como en las pruebas de inspección con drones en el puerto de Rotterdam.
 
-La meta de la asignatura es un accuracy mayor al 98 % sobre un conjunto de prueba que no se conoce de antemano, con una penalización de 0.5 por cada 2 % por debajo. Por eso el trabajo tuvo dos partes. La primera fue optimizar el clasificador sobre ShipsNet con validación cruzada. La segunda, comprobar que el modelo sigue funcionando con imágenes de otros satélites, otras resoluciones y otros puertos, porque nada garantiza que la prueba venga del mismo sensor que el dataset.
+El objetivo es un accuracy superior al 98 % en un conjunto de prueba que no se conoce de antemano. Por lo cual, el trabajo se dividió en dos partes. La primera consistió en optimizar el clasificador sobre ShipsNet mediante validación cruzada. La segunda, comprobar que el modelo sigue funcionando con imágenes de otros satélites, otras resoluciones y otros puertos, porque nada garantiza que la prueba venga del mismo sensor que el dataset.
 
 ## 2. Datos
 
@@ -19,32 +19,32 @@ La meta de la asignatura es un accuracy mayor al 98 % sobre un conjunto de prueb
 
 *Tabla 1. Conjuntos de datos. Los tres últimos se armaron para este proyecto.*
 
-En ShipsNet la clase "barco" es una imagen centrada en un único barco completo. La clase "no barco" incluye agua, tierra, muelles, barcos parciales cortados por el borde y confusores que otros modelos marcaban como barco. Los conjuntos nuevos siguen la misma regla: los positivos tienen el barco centrado y completo, ocupando entre el 40 % y el 95 % del lado del recorte; los negativos son ventanas al azar (agua, muelles, grúas, contenedores, zonas urbanas) y barcos cortados por el borde.
+En ShipsNet, la clase "barco" es una imagen centrada en un único barco completo. La clase "no barco" incluye agua, tierra, muelles, barcos parciales cortados por el borde y confusores que otros modelos marcaban como "barco". Los conjuntos nuevos siguen la misma regla: los positivos tienen el barco centrado y completo, ocupando entre el 40 % y el 95 % del lado del recorte; los negativos son ventanas al azar (agua, muelles, grúas, contenedores, zonas urbanas) y barcos cortados por el borde.
 
-Las etiquetas nuevas se hicieron a mano. En Rotterdam los candidatos los propuso un detector YOLOv8 público entrenado con imágenes de Google Earth y cada recorte se revisó a ojo; los dudosos (40) se descartaron. En las escenas de Maxar los barcos se marcaron sobre la imagen con una rejilla de coordenadas y los negativos se revisaron uno por uno para quitar los que tenían algún bote. Las coordenadas de todos los recortes están en `datos_externos/*.json` y `entrenamiento/armar_externos.py` los reconstruye desde las fuentes públicas (se verificó que el resultado es idéntico píxel a píxel).
+Las etiquetas nuevas se hicieron a mano. En Rotterdam, los candidatos fueron propuestos por un detector YOLOv8 público entrenado con imágenes de Google Earth y cada recorte se revisó a ojo; los dudosos (40) se descartaron. En las escenas de Maxar, los barcos se marcaron en la imagen con una rejilla de coordenadas y los negativos se revisaron uno por uno para eliminar los que contenían algún bote. Las coordenadas de todos los recortes están en `datos_externos/*.json`, y `entrenamiento/armar_externos.py` las reconstruye a partir de las fuentes públicas (se verificó que el resultado es idéntico píxel a píxel).
 
 Las escenas de Planet no son del todo independientes de ShipsNet: son las mismas zonas, y para 28 de los 39 positivos existe en ShipsNet un recorte casi idéntico (similitud coseno mayor a 0.95 entre las imágenes reducidas a 20×20 en gris, probando las 8 orientaciones). Rotterdam sí es independiente: otro sensor, otra resolución, otro puerto y otra época.
 
 ## 3. Protocolo de validación
 
 - Validación cruzada estratificada de 5 folds sobre ShipsNet, semilla 42. Todos los modelos (clásicos y redes) usan exactamente los mismos cortes, así que las comparaciones son pareadas.
-- Métricas: accuracy, precisión, recall y F1 de la clase barco, y AUC.
-- En los recortes de Maxar hay varios recortes del mismo barco a distintas escalas. Para que un mismo barco no quede a la vez en entrenamiento y validación se usa `StratifiedGroupKFold` agrupando por barco.
-- Los conjuntos de prueba externa nunca entran al entrenamiento de los modelos que se evalúan. Cada uno de los 5 modelos de la validación cruzada los predice y se reporta el promedio.
-- El modelo que usa la interfaz se reentrena al final con todos los datos (incluido Rotterdam). Las cifras de este informe vienen de los modelos de validación, que no vieron los datos con los que se miden.
+- Métricas: accuracy, precisión, recall y F1 de la clase barco y AUC.
+- En los recortes de Maxar hay varios del mismo barco a distintas escalas. Para que un mismo barco no quede a la vez en entrenamiento y validación, se usa `StratifiedGroupKFold` agrupando por barco.
+- Los conjuntos de prueba externos nunca se utilizan para entrenar los modelos que se evalúan. Cada uno de los 5 modelos de la validación cruzada los predice y se reporta el promedio.
+- El modelo que usa la interfaz se reentrena al final con todos los datos (incluido Rotterdam). Las cifras de este informe provienen de los modelos de validación, que no vieron los datos con los que se miden.
 
 ## 4. Línea base
 
-Antes de optimizar se fijó un punto de partida sin descriptores: cada imagen reducida a 40×40×3 y estandarizada, con regresión logística (C = 0.01). Da 93.00 % ± 0.26 de accuracy. Un KNN (k = 5) sobre las 50 primeras componentes principales llega a 93.23 % ± 0.57. Como referencia, decir "no barco" a todo ya da 75 %, así que la línea base aprende algo, pero está lejos de la meta: solo detecta el 85 % de los barcos (F1 de 0.86).
+Antes de optimizar, se fijó un punto de partida sin descriptores: cada imagen se redujo a 40×40×3 y se estandarizó, con regresión logística (C = 0.01). Da 93.00 % ± 0.26 de accuracy. Un KNN (k = 5) sobre las 50 primeras componentes principales alcanza un 93.23 % ± 0.57. Como referencia, decir "no barco" a todo ya da un 75 %, así que la línea base aprende algo, pero está lejos de la meta: solo detecta el 85 % de los barcos (F1 de 0.86).
 
 ## 5. Preprocesamiento y descriptores visuales
 
-El preprocesamiento es corto porque ShipsNet ya viene recortado y alineado a 80×80. Para los descriptores, la imagen pasa a gris (HOG y LBP) o a HSV (color), y cada característica se estandariza con la media y la desviación del fold de entrenamiento. Para las redes, los valores se llevan a [0, 1] y se normalizan por canal con la media y la desviación de ImageNet. Las imágenes que no llegan en 80×80, como las de otros sensores, se reescalan con filtro Lanczos.
+El preprocesamiento es breve porque ShipsNet ya viene recortado y alineado a 80×80. Para los descriptores, la imagen pasa a escala de grises (HOG y LBP) o a HSV (color), y cada característica se estandariza con la media y la desviación del fold de entrenamiento. Para las redes, los valores se llevan a [0, 1] y se normalizan por canal con la media y la desviación de ImageNet. Las imágenes que no llegan en 80×80, como las de otros sensores, se reescalan mediante el filtro Lanczos.
 
 Se probaron tres descriptores, cada uno con el mismo SVM de kernel RBF (C = 10, γ = scale) para que la comparación dependa solo del descriptor:
 
-- HOG sobre la imagen en gris (celdas de 8 px, 9 orientaciones, bloques de 2×2 con normalización L2-Hys, 2916 valores). Describe la silueta alargada del casco y sus bordes.
-- LBP uniforme (P = 8, R = 1): histograma de toda la imagen más uno por cuadrante, 50 valores. Describe textura.
+- HOG sobre la imagen en escala de grises (celdas de 8 px, 9 orientaciones, bloques de 2×2 con normalización L2-Hys, 2916 valores). Describe la silueta alargada del casco y sus bordes.
+- LBP uniforme (P = 8, R = 1): histograma de toda la imagen más 1 por cuadrante, 50 valores. Describe textura.
 - Color: histogramas HSV de 16 niveles más media y desviación de cada canal RGB, 54 valores.
 
 | Modelo | Tamaño del vector | Accuracy (%) | Precisión (%) | Recall (%) | F1 | AUC |
@@ -58,29 +58,29 @@ Se probaron tres descriptores, cada uno con el mismo SVM de kernel RBF (C = 10, 
 | HOG + color + LBP + SVM (C = 10, γ = scale) | 3020 | 98.90 ± 0.40 | 98.48 | 97.10 | 0.978 | 0.999 |
 | HOG + color + LBP + SVM con malla de C y γ | 3020 | 98.90 ± 0.40 | 98.48 | 97.10 | 0.978 | 0.999 |
 
-*Tabla 2. Validación cruzada de 5 folds sobre ShipsNet. Precisión, recall y F1 son de la clase barco.*
+*Tabla 2. Validación cruzada de 5 folds en ShipsNet. Precisión, recall y F1 son de la clase barco.*
 
 El HOG solo ya pasa de 93 % a 98.88 %. El color por sí mismo no separa las clases (77.85 %) porque el agua y los barcos cambian de tono entre escenas, y el LBP aporta poco (94.62 %). Juntar los tres descriptores sube apenas a 98.90 %, y un Random Forest sobre el mismo vector queda en 96.73 %.
 
-Para calibrar el SVM se hizo una búsqueda en malla de C ∈ {1, 3, 10, 30, 100} y γ ∈ {scale, 10⁻⁴, 3·10⁻⁴, 10⁻³} con validación cruzada anidada (3 folds internos dentro de cada uno de los 5 externos). La superficie es plana para C ≥ 3 y el único valor claramente malo es γ = 10⁻³, que sobreajusta y cae a 92 % (figura 1). La malla eligió C = 3 en los 5 folds externos, con γ = 3·10⁻⁴ en tres de ellos y γ = scale en dos, y no mejora el valor por defecto: el SVM ya estaba en su techo con estos descriptores. En costo, extraer los tres descriptores toma 4.3 ms por imagen y el SVM 2 ms más en un hilo de CPU.
+Para calibrar el SVM se realizó una búsqueda en malla de C ∈ {1, 3, 10, 30, 100} y γ ∈ {scale, 10⁻⁴, 3·10⁻⁴, 10⁻³}, con validación cruzada anidada (3 folds internos dentro de cada uno de los 5 externos). La superficie es plana para C ≥ 3 y el único valor claramente malo es γ = 10⁻³, que sobreajusta y cae a 92 % (figura 1). La malla eligió C = 3 en los 5 folds externos, con γ = 3·10⁻⁴ en tres de ellos y γ = scale en dos, y no mejora el valor por defecto: el SVM ya estaba en su techo con estos descriptores. En términos de costo, extraer los tres descriptores toma 4.3 ms por imagen y el SVM 2 ms más en un hilo de CPU.
 
 ![Sensibilidad del SVM](figuras/sensibilidad_svm.png)
 
 *Figura 1. Accuracy de la validación interna en función de C y γ. Las curvas de γ = scale y γ = 3·10⁻⁴ casi coinciden.*
 
-La sensibilidad del HOG (figura 2) dio un resultado que no se esperaba: celdas más grandes funcionan mejor. Con celdas de 4 px el SVM llega a 96.70 %, con 8 px (el valor por defecto) a 98.88 % y con 16 px a 99.33 %, usando 576 valores en lugar de 2916. A 80×80 píxeles, un descriptor grueso recoge la forma general del casco y deja por fuera detalles que cambian de una imagen a otra. El número de orientaciones casi no influye: entre 98.75 % y 98.95 % de 6 a 18. Con la celda de 16 px, agregar color y LBP ya no cambia el promedio: la combinación con el mismo SVM también da 99.33 % (± 0.42), el mejor resultado de los métodos clásicos.
+La sensibilidad del HOG (figura 2) arrojó un resultado inesperado: las celdas más grandes funcionan mejor. Con celdas de 4 px el SVM llega a 96.70 %, con 8 px (el valor por defecto) a 98.88 % y con 16 px a 99.33 %, usando 576 valores en lugar de 2916. A 80×80 píxeles, un descriptor grueso captura la forma general del casco y deja de lado detalles que varían de una imagen a otra. El número de orientaciones casi no influye: entre 98.75 % y 98.95 % de 6 a 18. Con la celda de 16 px, agregar color y LBP ya no cambia el promedio: la combinación con el mismo SVM también da 99.33 % (± 0.42), el mejor resultado de los métodos clásicos.
 
 ![Sensibilidad del HOG](figuras/sensibilidad_hog.png)
 
 *Figura 2. Accuracy en validación cruzada del SVM (C = 10) según el tamaño de celda y el número de orientaciones del HOG.*
 
-Con descriptores clásicos el techo quedó en 99.3 % ± 0.4. Es un margen corto sobre el 98 % para un conjunto de prueba desconocido, y la sección 8 muestra que este tipo de modelo se cae con desenfoque, compresión o baja resolución. Por eso se pasó a redes convolucionales.
+Con descriptores clásicos el techo quedó en 99.3 % ± 0.4. Es un margen corto respecto al 98 % para un conjunto de prueba desconocido, y la sección 8 muestra que este tipo de modelo se cae en desenfoque, compresión o baja resolución. Por eso se pasó a redes neuronales convolucionales.
 
 ## 6. Redes convolucionales
 
 ### 6.1 CNN propia
 
-Se diseñó una red pequeña para 80×80: cuatro bloques de dos convoluciones 3×3 con normalización por lotes y ReLU, cada uno seguido de max pooling (80 → 40 → 20 → 10 → 5), con 32, 64, 128 y 256 filtros, pooling global promedio, dropout de 0.3 y una salida sigmoide. Tiene 1.17 millones de parámetros. Se entrenó 25 épocas con AdamW (tasa máxima 2·10⁻³ con política one-cycle), lotes de 64, suavizado de etiquetas de 0.05 y peso 3 para la clase barco, que compensa la proporción 1:3 entre clases.
+Se diseñó una red pequeña para 80×80: cuatro bloques de dos convoluciones 3×3 con normalización por lotes y ReLU, cada uno seguido de max pooling (80 → 40 → 20 → 10 → 5), con 32, 64, 128 y 256 filtros, un pooling global promedio, dropout de 0.3 y una salida sigmoide. Tiene 1.17 millones de parámetros. Se entrenó durante 25 épocas con AdamW (tasa máxima de 2·10⁻³ con política one-cycle), lotes de 64, suavizado de etiquetas de 0.05 y peso 3 para la clase barco, que compensa la proporción 1:3 entre clases.
 
 Con esta red se midió el efecto del aumento de datos en tres niveles: ninguno, solo las 8 orientaciones (rotaciones de 90° y reflejo) y el aumento completo (orientaciones, rotación libre, escala, color, desenfoque, pérdida de resolución y ruido). Con el mismo presupuesto de 25 épocas, el aumento no ayuda dentro de ShipsNet: sin aumento la red llega a 98.92 %, con orientaciones a 98.62 % (98.77 % promediando las 8 vistas al predecir, TTA) y con el aumento completo a 97.42 %. Con más variación en los datos la red necesita más épocas: en una corrida de control sobre el fold 0, la accuracy de validación de la red con aumento completo seguía subiendo al final (91.9 % en la época 5, 96.8 % en la 20 y 98.0 % en la 25). El TTA sí depende del aumento: a la red entrenada sin rotaciones le baja el accuracy (de 98.92 % a 98.40 %), porque nunca vio barcos en esas orientaciones.
 
